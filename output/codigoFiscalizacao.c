@@ -47,17 +47,226 @@ typedef struct {
     char codigo[12];
     char cnpj[19];
     int peso;
+    int prioridade;
+    int diferencaPercentual;
 } Container;
 
+void mergeInt(Container *lista, int inicio, int meio, int fim) {
+
+    int tamEsq = meio - inicio;
+    int tamDir = fim - meio;
+
+//alocação de memória dinâmica para vetores "temporários á esquerda e á direita" com o tamnnho pré-definido acima
+    Container *conteineresEsq = (Container *)malloc(tamEsq * sizeof(Container));
+    Container *conteineresDir = (Container *)malloc(tamDir * sizeof(Container));
+    if (conteineresEsq == NULL || conteineresDir == NULL) {
+    printf("ERRO\n");
+    return;
+    }
 
 
+    if (conteineresEsq != NULL && conteineresDir != NULL) {
+//lopp de preenchimento dos vetores temporários
+        for (int i = 0; i < tamEsq; i++) {
+            conteineresEsq[i] = lista[inicio + i];
+        }
+        for (int i = 0; i < tamDir; i++) {
+            conteineresDir[i] = lista[meio + i];
+        }
+
+        int i = 0, j = 0, k = inicio;
+
+//aqui é realizada a comparação entre os valores dos vetores temporários e a ordenação dos valores no vetor principal(essa ordenação é decrescente=condição verificada na linha 35)
+        while (i < tamEsq && j < tamDir) {
+            //a verificação se o código do container da lista temporária da direita é menor ao da lista temporária esquerda
+            if (conteineresEsq[i].diferencaPercentual > conteineresDir[j].diferencaPercentual) {
+                //a função "stcrmp" retorna números positivos caso o da esquerda for maior que o da direitaa ou 0 se forem iguais
+                lista[k++] = conteineresEsq[i++];
+            } else {
+                lista[k++] = conteineresDir[j++];
+            }
+        }
+        
+//preenchendo o vetor principal com os valores restantes.Essa parte é importante pois, após a comparação, pode haver elementos sobrando nas duas metades. Como o código ancima já preencheu o vetor lista até o ponto em que uma das metades acabou, essa estrutura garante que qualquer valor restante na outra metade seja copiado para o vetor principal lista
+        while (i < tamEsq) {
+            lista[k++] = conteineresEsq[i++];
+        }
+        while (j < tamDir) {
+            lista[k++] = conteineresDir[j++];
+        }
+
+//liberando a memória dos vetores temporários
+        free(conteineresEsq);
+        free(conteineresDir);
+        printf("lista ordenada dos selecionados\n");
+    } else {
+        printf("Erro ao alocar memória.\n");
+    }
+}
+
+void mergeSortInt(Container *lista, int inicio, int fim) {
+    if (fim - inicio > 1) {
+        int meio = (inicio + fim) / 2;
+        mergeSortInt(lista, inicio, meio);
+        mergeSortInt(lista, meio, fim);
+        mergeInt(lista, inicio, meio, fim);
+    }
+}
+
+
+void mergeSort(Container *lista, int inicio, int fim) {
+    if (fim - inicio > 1) {
+        int meio = (inicio + fim) / 2;
+        mergeSort(lista, inicio, meio);
+        mergeSort(lista, meio, fim);
+        merge(lista, inicio, meio, fim);
+    }
+}
+
+void merge(Container *lista, int inicio, int meio, int fim) {
+
+    int tamEsq = meio - inicio;
+    int tamDir = fim - meio;
+
+//alocação de memória dinâmica para vetores "temporários á esquerda e á direita" com o tamnnho pré-definido acima
+    Container *conteineresEsq = (Container *)malloc(tamEsq * sizeof(Container));
+    Container *conteineresDir = (Container *)malloc(tamDir * sizeof(Container));
+    if (conteineresEsq == NULL || conteineresDir == NULL) {
+    printf("ERRO\n");
+    return;
+    }
+
+
+    if (conteineresEsq != NULL && conteineresDir != NULL) {
+//lopp de preenchimento dos vetores temporários
+        for (int i = 0; i < tamEsq; i++) {
+            conteineresEsq[i] = lista[inicio + i];
+        }
+        for (int i = 0; i < tamDir; i++) {
+            conteineresDir[i] = lista[meio + i];
+        }
+
+        int i = 0, j = 0, k = inicio;
+
+//aqui é realizada a comparação entre os valores dos vetores temporários e a ordenação dos valores no vetor principal(essa ordenação é decrescente=condição verificada na linha 35)
+        while (i < tamEsq && j < tamDir) {
+            //a verificação se o código do container da lista temporária da direita é menor ao da lista temporária esquerda
+            if (strcmp(conteineresEsq[i].codigo, conteineresDir[j].codigo) > 0) {
+                //a função "stcrmp" retorna números positivos caso o da esquerda for maior que o da direitaa ou 0 se forem iguais
+                lista[k++] = conteineresEsq[i++];
+            } else {
+                lista[k++] = conteineresDir[j++];
+            }
+        }
+        
+//preenchendo o vetor principal com os valores restantes.Essa parte é importante pois, após a comparação, pode haver elementos sobrando nas duas metades. Como o código ancima já preencheu o vetor lista até o ponto em que uma das metades acabou, essa estrutura garante que qualquer valor restante na outra metade seja copiado para o vetor principal lista
+        while (i < tamEsq) {
+            lista[k++] = conteineresEsq[i++];
+        }
+        while (j < tamDir) {
+            lista[k++] = conteineresDir[j++];
+        }
+
+//liberando a memória dos vetores temporários
+        free(conteineresEsq);
+        free(conteineresDir);
+        printf("lista ordenada dos selecionados\n");
+    } else {
+        printf("Erro ao alocar memória.\n");
+    }
+}
+
+// para usar a busca binária,é recomendado o vetor estar ORDENADO
+int buscaBinaria(Container *lista,char *chave,int inicio,int fim){
+    int meio;
+    if(inicio <= fim){
+        meio = (inicio+fim)/2;
+        //retornará 0 caso o código do container selecionado bater com o já cadastrado,retornando 0,caso igual satisfazendo a condição
+        if(strcmp(chave,lista[meio].codigo) == 0) {
+            return meio;//vai retornar o índice na lista ordenada (a lista de cadastrados) em que a chave coincide com o código
+        } else {
+            if(strcmp(chave, lista[meio].codigo) < 0){
+                //a função strcmp retornará um valor negativo quando o da direita for maior que o da esquerda,como nossa lista tá ordenada em ordem decrescente,os menores sempre estarão á direita,logo,o novo inicio será o meio+1
+                return buscaBinaria(lista,chave,meio+1,fim);
+            } else {
+                //a funçaõ será chamada recursivamente caso o strcmp retorne um valor maior que 0.Logo,isso significa que o elemento que estou buscando é maior que o meio.
+                //análogo ao que foi dito,os elementos mmaiores se encontram á esquerda,logo,o novo fim será meio -1
+                return buscaBinaria(lista,chave,inicio,meio-1);
+            }
+        }
+    } else {
+        //quando não encontra o elemento
+        return -1;
+    }
+    
+}
+
+void inspecionarConteineres(Container *cadastrados,Container *selecionados,int numeroCadastrados,int numeroSelecionados){
+    //o lopp vai percorrer a lista de selecionados com base no código da lista de cadastrados(a qual está mantida sua ordem de cadastramento)
+    for(int i =0;i<numeroCadastrados;i++){
+        int indice = buscaBinaria(selecionados,cadastrados[i].codigo, 0 ,numeroSelecionados-1);
+        //verificação para analisar se o código do selecionado bateu com o cadastrado
+        //caso não bata,ele retorna -1,ao contrário,se for igual,o retorno é 0
+        if(indice != -1){
+            //caso o cnpj seja difererente,ele retorna um valor diferente de 0,o que cai no else if
+            if (strcmp(cadastrados[i].cnpj, selecionados[indice].cnpj) != 0) {
+                // Divergência de CNPJ cai no campo prioridade como 1
+                selecionados[indice].prioridade = 1;
+            } else if (abs(cadastrados[i].peso - selecionados[indice].peso) > 0.1 * cadastrados[i].peso) {
+                // Divernça percentual > 10% cai no campo prioridade como 2
+                selecionados[indice].prioridade = 2;
+                //aqui é realizado o cálculo da diferença percentual entre o peso cadastrado e o peso selecionado,o "abs" é para garantir que o valor seja sempre positivo
+                selecionados[indice].diferencaPercentual = ((float) abs(cadastrados[i].peso - selecionados[indice].peso) / cadastrados[i].peso) * 100;
+            }
+        }
+    }
+}
+
+void ordenarPrioridade2(Container *selecionados, int m) {
+    // Filtrando os contêineres com prioridade 2
+    int count = 0;
+    for (int i = 0; i < m; i++) {
+        if (selecionados[i].prioridade == 2) {
+            count++;
+        }
+    }
+    
+    // Alocando memória para os contêineres com prioridade 2
+    Container *prioridade2 = (Container *)malloc(count * sizeof(Container));
+    if (!prioridade2) {
+        printf("Erro ao alocar memória.\n");
+        return;
+    }
+    
+    // Copiando os contêineres com prioridade 2 para o vetor temporário
+    int j = 0;
+    for (int i = 0; i < m; i++) {
+        if (selecionados[i].prioridade == 2) {
+            prioridade2[j++] = selecionados[i];
+        }
+    }
+    
+    // Ordenando os contêineres com prioridade 2
+    mergeSortInt(prioridade2, 0, count);
+    
+    // Colocando os contêineres ordenados de volta
+    j = 0;
+    for (int i = 0; i < m; i++) {
+        if (selecionados[i].prioridade == 2) {
+            selecionados[i] = prioridade2[j++];
+        }
+    }
+    
+    free(prioridade2);  // Liberando a memória alocada
+}
 
 int main() {
-    int n;
+    int n,m;
+    Container *cadastrados, *selecionados;
 
     printf("Digite o número de contêineres cadastrados:\n");
     scanf("%d", &n);
-    Container *cadastrados = malloc(n * sizeof(Container));
+    cadastrados = (Container *)malloc(n * sizeof(Container));
     if (!cadastrados) {
         printf("Erro ao alocar memória.\n");
         return 1;
@@ -65,11 +274,47 @@ int main() {
     for(int i = 0;i<n;i++){
         scanf("%s %s %d", cadastrados[i].codigo, cadastrados[i].cnpj, &cadastrados[i].peso);
     }
+    
     printf("CONTEINERS CADASTRADOS\n");
     for(int i = 0;i<n;i++){
         printf("%s %s %d\n", cadastrados[i].codigo, cadastrados[i].cnpj, cadastrados[i].peso);
     }
+    
+    printf("Digite o número de contêineres selecionados:\n");
+    scanf("%d", &m);
+    selecionados = (Container *)malloc(m * sizeof(Container));
+    if (!selecionados) {
+        printf("Erro ao alocar memória.\n");
+        return 1;
+    }
+    
+    for(int i = 0;i<m;i++){
+        scanf("%s %s %d", selecionados[i].codigo, selecionados[i].cnpj, &selecionados[i].peso);
+    }
+    mergeSort(selecionados, 0 , m);
+    
+    
+    printf("CONTEINERS selecionados\n");
+    for(int i = 0;i<m;i++){
+        printf("%s %s %d\n", selecionados[i].codigo, selecionados[i].cnpj, selecionados[i].peso);
+    }
+    inspecionarConteineres(cadastrados, selecionados, n, m);
 
+    printf("Contêineres para inspeção (ordenados por prioridade):\n");
+    for (int i = 0; i < m; i++) {
+        if (selecionados[i].prioridade == 1) {
+            printf("%s: Divergência de CNPJ %s<->%s\n", selecionados[i].codigo,selecionados[i].cnpj, cadastrados[i].cnpj);
+        }
+    }
+
+    ordenarPrioridade2(selecionados, m);
+    for (int i = 0;i<m;i++){
+        if (selecionados[i].prioridade == 2) {
+            printf("%s: Diferença de peso %.2d%%\n", selecionados[i].codigo, selecionados[i].diferencaPercentual);
+        }
+    }
+    
     free(cadastrados);
+    free(selecionados);
     return 0;
 }
