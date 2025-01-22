@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 /*
 A empresa de automação portuária **Poxim Tech** está desenvolvendo um sistema para a movimentação automatizada dos contêineres de carga de origem internacional no Porto de Sergipe, com o objetivo de maximizar a eficiência da fiscalização aduaneira.
@@ -201,71 +202,62 @@ int buscaBinaria(Container *lista,char *chave,int inicio,int fim){
     
 }
 
-void inspecionarConteineres(Container *cadastrados,Container *selecionados,int numeroCadastrados,int numeroSelecionados){
+void inspecionarConteineres(Container *cadastrados,Container *selecionados,Container *pesoIncompativel,int numeroCadastrados,int numeroSelecionados){
     //o lopp vai percorrer a lista de selecionados com base no código da lista de cadastrados(a qual está mantida sua ordem de cadastramento)
     for(int i =0;i<numeroCadastrados;i++){
         int indice = buscaBinaria(selecionados,cadastrados[i].codigo, 0 ,numeroSelecionados-1);
         //verificação para analisar se o código do selecionado bateu com o cadastrado
         //caso não bata,ele retorna -1,ao contrário,se for igual,o retorno é 0
         if(indice != -1){
+                printf("Contêineres para inspeção (ordenados por prioridade):\n");
             //caso o cnpj seja difererente,ele retorna um valor diferente de 0,o que cai no else if
             if (strcmp(cadastrados[i].cnpj, selecionados[indice].cnpj) != 0) {
                 // Divergência de CNPJ cai no campo prioridade como 1
                 selecionados[indice].prioridade = 1;
+                printf("%s: Divergência de CNPJ %s<->%s\n", selecionados[indice].codigo, cadastrados[i].cnpj,selecionados[indice].cnpj);
+
             } else if (abs(cadastrados[i].peso - selecionados[indice].peso) > 0.1 * cadastrados[i].peso) {
-                // Divernça percentual > 10% cai no campo prioridade como 2
-                selecionados[indice].prioridade = 2;
+                //copia as informações para o struct pesoIncompativel
+                strcpy(pesoIncompativel[i].codigo, selecionados[indice].codigo);
+                strcpy(pesoIncompativel[i].cnpj, selecionados[indice].cnpj);
+                pesoIncompativel[i].peso = cadastrados[i].peso - selecionados[indice].peso;
                 //aqui é realizado o cálculo da diferença percentual entre o peso cadastrado e o peso selecionado,o "abs" é para garantir que o valor seja sempre positivo
-                selecionados[indice].diferencaPercentual = ((float) abs(cadastrados[i].peso - selecionados[indice].peso) / cadastrados[i].peso) * 100;
+                pesoIncompativel[i].diferencaPercentual = (int) roundf(((float) abs(cadastrados[i].peso - selecionados[indice].peso) / cadastrados[i].peso) * 100);
+                pesoIncompativel[i].prioridade = 2;
+                
             }
         }
     }
 }
 
-void ordenarPrioridade2(Container *selecionados, int m) {
+
+
+void ordenarPrioridade2(Container *pesoIncompativel, int m) {
     // Filtrando os contêineres com prioridade 2
-    int count = 0;
+    int tamanho = 0;
     for (int i = 0; i < m; i++) {
-        if (selecionados[i].prioridade == 2) {
-            count++;
+        if (pesoIncompativel[i].prioridade == 2) {
+            tamanho++;
         }
     }
     
-    // Alocando memória para os contêineres com prioridade 2
-    Container *prioridade2 = (Container *)malloc(count * sizeof(Container));
-    if (!prioridade2) {
-        printf("Erro ao alocar memória.\n");
-        return;
+    // Ordenando os contêineres com diferenca percentual maior que 10%
+    mergeSortInt(pesoIncompativel, 0, tamanho);
+    
+    //exibe os contêineres (já ordenados pelo mergesort)
+    for (int i = 0;i<tamanho;i++){
+            printf("%s: Diferença de peso %d (%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
     }
-    
-    // Copiando os contêineres com prioridade 2 para o vetor temporário
-    int j = 0;
-    for (int i = 0; i < m; i++) {
-        if (selecionados[i].prioridade == 2) {
-            prioridade2[j++] = selecionados[i];
-        }
-    }
-    
-    // Ordenando os contêineres com prioridade 2
-    mergeSortInt(prioridade2, 0, count);
-    
-    // Colocando os contêineres ordenados de volta
-    j = 0;
-    for (int i = 0; i < m; i++) {
-        if (selecionados[i].prioridade == 2) {
-            selecionados[i] = prioridade2[j++];
-        }
-    }
-    
-    free(prioridade2);  // Liberando a memória alocada
+
 }
 
 int main() {
     int n,m;
-    Container *cadastrados, *selecionados;
+    Container *cadastrados, *selecionados, *pesoIncompativel;
 
     printf("Digite o número de contêineres cadastrados:\n");
     scanf("%d", &n);
+    pesoIncompativel = (Container* )malloc(n * sizeof(Container));
     cadastrados = (Container *)malloc(n * sizeof(Container));
     if (!cadastrados) {
         printf("Erro ao alocar memória.\n");
@@ -298,23 +290,12 @@ int main() {
     for(int i = 0;i<m;i++){
         printf("%s %s %d\n", selecionados[i].codigo, selecionados[i].cnpj, selecionados[i].peso);
     }
-    inspecionarConteineres(cadastrados, selecionados, n, m);
+    inspecionarConteineres(cadastrados, selecionados,pesoIncompativel, n, m);
 
-    printf("Contêineres para inspeção (ordenados por prioridade):\n");
-    for (int i = 0; i < m; i++) {
-        if (selecionados[i].prioridade == 1) {
-            printf("%s: Divergência de CNPJ %s<->%s\n", selecionados[i].codigo,selecionados[i].cnpj, cadastrados[i].cnpj);
-        }
-    }
-
-    ordenarPrioridade2(selecionados, m);
-    for (int i = 0;i<m;i++){
-        if (selecionados[i].prioridade == 2) {
-            printf("%s: Diferença de peso %.2d%%\n", selecionados[i].codigo, selecionados[i].diferencaPercentual);
-        }
-    }
+    ordenarPrioridade2(pesoIncompativel, m);
     
     free(cadastrados);
     free(selecionados);
+    free(pesoIncompativel);
     return 0;
 }
