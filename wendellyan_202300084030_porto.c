@@ -114,14 +114,6 @@ void mergeSortInt(Container *lista, int inicio, int fim) {
 }
 
 
-void mergeSort(Container *lista, int inicio, int fim) {
-    if (fim - inicio > 1) {
-        int meio = (inicio + fim) / 2;
-        mergeSort(lista, inicio, meio);
-        mergeSort(lista, meio, fim);
-        merge(lista, inicio, meio, fim);
-    }
-}
 
 void merge(Container *lista, int inicio, int meio, int fim) {
 
@@ -175,6 +167,15 @@ void merge(Container *lista, int inicio, int meio, int fim) {
     }
 }
 
+void mergeSort(Container *lista, int inicio, int fim) {
+    if (fim - inicio > 1) {
+        int meio = (inicio + fim) / 2;
+        mergeSort(lista, inicio, meio);
+        mergeSort(lista, meio, fim);
+        merge(lista, inicio, meio, fim);
+    }
+}
+
 // para usar a busca binária,é recomendado o vetor estar ORDENADO
 int buscaBinaria(Container *lista,char *chave,int inicio,int fim){
     int meio;
@@ -200,19 +201,102 @@ int buscaBinaria(Container *lista,char *chave,int inicio,int fim){
     
 }
 
-void ordenarPrioridade2(Container *pesoIncompativel, int tamanho) {
+
+// void ordenarPrioridade2(Container *pesoIncompativel, int tamanho) {
+
+//     // Ordenando os contêineres com diferenca percentual maior que 10%
+//     mergeSortInt(pesoIncompativel, 0, tamanho);
+    
+//     //exibe os contêineres (já ordenados pelo mergesort)
+//     for (int i = 0;i<tamanho;i++){
+//             fprintf(saida,"%s:%d(%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
+//     }
+
+// }
+
+
+// void inspecionarConteineres(Container *cadastrados,Container *selecionados,Container *pesoIncompativel,int numeroCadastrados,int numeroSelecionados){
+//     //o lopp vai percorrer a lista de selecionados com base no código da lista de cadastrados(a qual está mantida sua ordem de cadastramento)
+//                 int contadorPesoIncompativel = 0;
+//     for(int i =0;i<numeroCadastrados;i++){
+//         int indice = buscaBinaria(selecionados,cadastrados[i].codigo, 0 ,numeroSelecionados-1);
+//         //verificação para analisar se o código do selecionado bateu com o cadastrado
+//         //caso não bata,ele retorna -1,ao contrário,se for igual,o retorno é 0
+//         if(indice != -1){
+//             //caso o cnpj seja difererente,ele retorna um valor diferente de 0,o que cai no else if
+//             if (strcmp(cadastrados[i].cnpj, selecionados[indice].cnpj) != 0) {
+//                 // Divergência de CNPJ cai no campo prioridade como 1
+//                 selecionados[indice].prioridade = 1;
+//                 //fprintf para escrever no arquivo de saída
+//                 fprintf(saida,"%s:%s<->%s\n", selecionados[indice].codigo, cadastrados[i].cnpj,selecionados[indice].cnpj);
+                
+//             } else if (abs(cadastrados[i].peso - selecionados[indice].peso) > 0.1 * cadastrados[i].peso) {
+//                 //copia as informações para o struct pesoIncompativel
+//                 strcpy(pesoIncompativel[contadorPesoIncompativel].codigo, selecionados[indice].codigo);
+//                 strcpy(pesoIncompativel[contadorPesoIncompativel].cnpj, selecionados[indice].cnpj);
+//                 pesoIncompativel[contadorPesoIncompativel].peso = abs(cadastrados[i].peso - selecionados[indice].peso);
+//                 //aqui é realizado o cálculo da diferença percentual entre o peso cadastrado e o peso selecionado,o "abs" é para garantir que o valor seja sempre positivo,round para arredondamento do valor para a casa decimal próxima e (double) para garantir que a divisão seja feita com números decimais,garantindo maior precisão
+//                 pesoIncompativel[contadorPesoIncompativel].diferencaPercentual = (int) round(((double) abs(cadastrados[i].peso - selecionados[indice].peso) / (double) cadastrados[i].peso) * 100);
+//                 pesoIncompativel[contadorPesoIncompativel].prioridade = 2;
+//                 contadorPesoIncompativel++;
+//             }
+//         }
+//     }
+//     ordenarPrioridade2(pesoIncompativel, contadorPesoIncompativel);
+// }
+
+
+
+int main(int argc, char *argv[]) {
+    FILE* arquivo = fopen(argv[1], "r");
+    if (arquivo == NULL) {
+        printf("ERRO\n");
+        return 0;
+    }
+    FILE* saida = fopen(argv[2], "w");
+    if (saida == NULL) {
+        printf("ERRO\n");
+        return 0;
+    }
+
+    int n, m;
+
+    //leitura do número de contêineres cadastrados que estará na primeira linha do arquivo(especificado no slide)
+    fscanf(arquivo, "%d", &n);
+    Container* cadastrados = (Container*) malloc(n * sizeof(Container));
+    Container *pesoIncompativel = (Container *)malloc(n * sizeof(Container));
+    if (cadastrados == NULL || pesoIncompativel == NULL) {
+        printf("ERRO\n");
+        return 0;
+    }
+    //Leitura dos contêineres com tamanho m usando um loop cadastrados no formato de entrada especificado no slide
+    for (int i = 0; i < n; i++) {
+        fscanf(arquivo, "%s %s %d", cadastrados[i].codigo, cadastrados[i].cnpj, &cadastrados[i].peso);
+    }
+
+    fscanf(arquivo, "%d", &m);
+    Container* selecionados = (Container*) malloc(m * sizeof(Container));
+    if (selecionados == NULL) {
+        printf("ERRO\n");
+        return 0;
+    }
+    for (int i = 0; i < m; i++) {
+        fscanf(arquivo, "%s %s %d", selecionados[i].codigo, selecionados[i].cnpj, &selecionados[i].peso);
+    }
+
+    void ordenarPrioridade2(Container *pesoIncompativel, int tamanho) {
 
     // Ordenando os contêineres com diferenca percentual maior que 10%
     mergeSortInt(pesoIncompativel, 0, tamanho);
     
     //exibe os contêineres (já ordenados pelo mergesort)
     for (int i = 0;i<tamanho;i++){
-            printf("%s: Diferença de peso %d (%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
+            fprintf(saida,"%s:%d(%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
     }
 
-}
+    }
 
-void inspecionarConteineres(Container *cadastrados,Container *selecionados,Container *pesoIncompativel,int numeroCadastrados,int numeroSelecionados){
+    void inspecionarConteineres(Container *cadastrados,Container *selecionados,Container *pesoIncompativel,int numeroCadastrados,int numeroSelecionados){
     //o lopp vai percorrer a lista de selecionados com base no código da lista de cadastrados(a qual está mantida sua ordem de cadastramento)
                 int contadorPesoIncompativel = 0;
     for(int i =0;i<numeroCadastrados;i++){
@@ -224,8 +308,9 @@ void inspecionarConteineres(Container *cadastrados,Container *selecionados,Conta
             if (strcmp(cadastrados[i].cnpj, selecionados[indice].cnpj) != 0) {
                 // Divergência de CNPJ cai no campo prioridade como 1
                 selecionados[indice].prioridade = 1;
-                printf("%s:%s<->%s\n", selecionados[indice].codigo, cadastrados[i].cnpj,selecionados[indice].cnpj);
-
+                //fprintf para escrever no arquivo de saída
+                fprintf(saida,"%s:%s<->%s\n", selecionados[indice].codigo, cadastrados[i].cnpj,selecionados[indice].cnpj);
+                
             } else if (abs(cadastrados[i].peso - selecionados[indice].peso) > 0.1 * cadastrados[i].peso) {
                 //copia as informações para o struct pesoIncompativel
                 strcpy(pesoIncompativel[contadorPesoIncompativel].codigo, selecionados[indice].codigo);
@@ -240,47 +325,6 @@ void inspecionarConteineres(Container *cadastrados,Container *selecionados,Conta
     }
     ordenarPrioridade2(pesoIncompativel, contadorPesoIncompativel);
 }
-
-
-
-
-
-int main(int argc, char *argv[]) {
-    FILE* arquivo = fopen(argv[1], "r");
-    if (arquivo == NULL) {
-        printf("ERRO\n");
-        return;
-    }
-    FILE* saida = fopen(argv[2], "w");
-    if (saida == NULL) {
-        printf("ERRO\n");
-        return;
-    }
-
-    int n, m;
-
-    //leitura do número de contêineres cadastrados que estará na primeira linha do arquivo(especificado no slide)
-    fscanf(arquivo, "%d", &n);
-    Container* cadastrados = (Container*) malloc(n * sizeof(Container));
-    Container *pesoIncompativel = (Container *)malloc(n * sizeof(Container));
-    if (cadastrados == NULL || pesoIncompativel == NULL) {
-        printf("ERRO\n");
-        return;
-    }
-    //Leitura dos contêineres com tamanho m usando um loop cadastrados no formato de entrada especificado no slide
-    for (int i = 0; i < n; i++) {
-        fscanf(arquivo, "%s %s %d", cadastrados[i].codigo, cadastrados[i].cnpj, &cadastrados[i].peso);
-    }
-
-    fscanf(arquivo, "%d", &m);
-    Container* selecionados = (Container*) malloc(m * sizeof(Container));
-    if (selecionados == NULL) {
-        printf("ERRO\n");
-        return;
-    }
-    for (int i = 0; i < m; i++) {
-        fscanf(arquivo, "%s %s %d", selecionados[i].codigo, selecionados[i].cnpj, &selecionados[i].peso);
-    }
     mergeSort(selecionados, 0, m);
     inspecionarConteineres(cadastrados, selecionados, pesoIncompativel, n, m);
     free(cadastrados);
@@ -288,6 +332,7 @@ int main(int argc, char *argv[]) {
     free(pesoIncompativel);
 
     fclose(arquivo);
+    fclose(saida);
 
     return 0;
 }

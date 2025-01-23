@@ -114,14 +114,6 @@ void mergeSortInt(Container *lista, int inicio, int fim) {
 }
 
 
-void mergeSort(Container *lista, int inicio, int fim) {
-    if (fim - inicio > 1) {
-        int meio = (inicio + fim) / 2;
-        mergeSort(lista, inicio, meio);
-        mergeSort(lista, meio, fim);
-        merge(lista, inicio, meio, fim);
-    }
-}
 
 void merge(Container *lista, int inicio, int meio, int fim) {
 
@@ -175,6 +167,15 @@ void merge(Container *lista, int inicio, int meio, int fim) {
     }
 }
 
+void mergeSort(Container *lista, int inicio, int fim) {
+    if (fim - inicio > 1) {
+        int meio = (inicio + fim) / 2;
+        mergeSort(lista, inicio, meio);
+        mergeSort(lista, meio, fim);
+        merge(lista, inicio, meio, fim);
+    }
+}
+
 // para usar a busca binária,é recomendado o vetor estar ORDENADO
 int buscaBinaria(Container *lista,char *chave,int inicio,int fim){
     int meio;
@@ -207,7 +208,7 @@ void ordenarPrioridade2(Container *pesoIncompativel, int tamanho) {
     
     //exibe os contêineres (já ordenados pelo mergesort)
     for (int i = 0;i<tamanho;i++){
-            printf("%s: Diferença de peso %d (%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
+            printf("%s:%d(%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
     }
 
 }
@@ -249,12 +250,12 @@ int main(int argc, char *argv[]) {
     FILE* arquivo = fopen(argv[1], "r");
     if (arquivo == NULL) {
         printf("ERRO\n");
-        return;
+        return 0;
     }
     FILE* saida = fopen(argv[2], "w");
     if (saida == NULL) {
         printf("ERRO\n");
-        return;
+        return 0;
     }
 
     int n, m;
@@ -265,7 +266,7 @@ int main(int argc, char *argv[]) {
     Container *pesoIncompativel = (Container *)malloc(n * sizeof(Container));
     if (cadastrados == NULL || pesoIncompativel == NULL) {
         printf("ERRO\n");
-        return;
+        return 0;
     }
     //Leitura dos contêineres com tamanho m usando um loop cadastrados no formato de entrada especificado no slide
     for (int i = 0; i < n; i++) {
@@ -276,7 +277,7 @@ int main(int argc, char *argv[]) {
     Container* selecionados = (Container*) malloc(m * sizeof(Container));
     if (selecionados == NULL) {
         printf("ERRO\n");
-        return;
+        return 0;
     }
     for (int i = 0; i < m; i++) {
         fscanf(arquivo, "%s %s %d", selecionados[i].codigo, selecionados[i].cnpj, &selecionados[i].peso);
@@ -288,6 +289,7 @@ int main(int argc, char *argv[]) {
     free(pesoIncompativel);
 
     fclose(arquivo);
+    fclose(saida);
 
     return 0;
 }
