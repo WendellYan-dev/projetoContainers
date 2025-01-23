@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
     
     //exibe os contêineres (já ordenados pelo mergesort)
     for (int i = 0;i<tamanho;i++){
-            fprintf(saida,"%s:%d(%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
+            fprintf(saida,"%s:%dkg(%.2d%%)\n", pesoIncompativel[i].codigo,pesoIncompativel[i].peso, pesoIncompativel[i].diferencaPercentual);
     }
 
     }
